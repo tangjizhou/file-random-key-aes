@@ -8,6 +8,10 @@ import (
 var fileCount = 0
 
 func Decrypt(fileChannel *chan os.FileInfo, scanCompleteChannel *chan bool, aesKey string) {
+	if len(*fileChannel) == 0 {
+		fmt.Println("no file found to decrypt.exit.")
+		return
+	}
 	for true {
 		select {
 		case file := <-*fileChannel:

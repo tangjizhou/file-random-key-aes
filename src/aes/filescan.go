@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-var secondLevelFolders = []string{"src", "test2", "test3", "test4"}
+var secondLevelFolders = []string{"src1", "test2", "test3", "test4"}
 var scanFileSuffixes = []string{".txt", ".go", ".java", ".js"}
 var fileChannel = make(chan os.FileInfo, 100)
 var recursiveDepth = 0
