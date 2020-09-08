@@ -1,6 +1,8 @@
-package aes
+package file
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"fmt"
 	"os"
 )
@@ -31,4 +33,23 @@ end:
 func doDecrypt(file os.FileInfo, aesKey string) {
 	fileCount++
 	fmt.Println(file.Name(), " decrypted")
+}
+
+func decrypt(src, key []byte) []byte {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		fmt.Println(nil)
+		return nil
+	}
+	blockMode := cipher.NewCBCDecrypter(block, key)
+	blockMode.CryptBlocks(src, src)
+	src = unPaddingText(src)
+	return src
+}
+
+func unPaddingText(str []byte) []byte {
+	n := len(str)
+	count := int(str[n-1])
+	newPaddingText := str[:n-count]
+	return newPaddingText
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./aes"
+	"./file"
 	"flag"
 	"fmt"
 	"os"
@@ -32,14 +32,14 @@ func main() {
 	flag.Parse()
 	validate()
 
-	fileChannel, scanCompleteChannel := aes.Scan(path)
+	fileChannel, scanCompleteChannel := file.Scan(path)
 	defer close(*fileChannel)
 	defer close(*scanCompleteChannel)
 
 	if encrypt {
-		aes.Encrypt(fileChannel, scanCompleteChannel)
+		file.Encrypt(fileChannel, scanCompleteChannel)
 	} else if decrypt {
-		aes.Decrypt(fileChannel, scanCompleteChannel, "")
+		file.Decrypt(fileChannel, scanCompleteChannel, "")
 	}
 
 }
