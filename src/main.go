@@ -24,22 +24,33 @@ func main() {
 		}
 	}()
 
-	flag.BoolVar(&encrypt, "e", false, "encryption mode")
+	flag.Usage = func() {
+		fmt.Println("Note: you must have [rwx] permission of target dir before your start")
+		flag.PrintDefaults()
+		fmt.Println("example for encrypt: file-aes [-e] -p <path> [-y]")
+		fmt.Println("example for decrypt: file-aes -d -key <key> -path <path> [-y]")
+	}
+
+	flag.BoolVar(&encrypt, "e", true, "encryption mode")
 	flag.BoolVar(&decrypt, "d", false, "decryption mode")
 	flag.BoolVar(&confirm, "y", false, "confirm")
 	flag.StringVar(&path, "p", "", "file path")
 	flag.StringVar(&aesKey, "key", "", "decrypt key")
 	flag.Parse()
+
 	validate()
+	askConfirm()
 
 	fileChannel, scanCompleteChannel := file.Scan(path)
 	defer close(*fileChannel)
 	defer close(*scanCompleteChannel)
 
-	if encrypt {
-		file.Encrypt(fileChannel, scanCompleteChannel)
-	} else if decrypt {
+	if decrypt {
 		file.Decrypt(fileChannel, scanCompleteChannel, "")
+	} else if encrypt {
+		file.Encrypt(fileChannel, scanCompleteChannel)
+	} else {
+		fmt.Println("mode not exists,exit")
 	}
 
 }
@@ -56,19 +67,19 @@ func validate() {
 	if path == "" {
 		panic("file path required")
 	}
+}
 
+func askConfirm() {
 	if confirm {
 		return
 	}
-	// ask for confirm
-	fmt.Print("confirm encrypt file in the folder:", path, ",yes or no ?")
+	fmt.Print("is the path confirmed [", path, "],yes or no: ")
 	var answer string
 	_, err := fmt.Scanf("%s", &answer)
 	if err != nil {
 		panic(err)
 	}
 	if answer != "yes" && answer != "y" {
-		panic("process canceled")
+		panic("operation canceled")
 	}
-
 }

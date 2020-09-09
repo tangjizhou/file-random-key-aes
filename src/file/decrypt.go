@@ -4,12 +4,12 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
-	"os"
+	"io/ioutil"
 )
 
 var fileCount = 0
 
-func Decrypt(fileChannel *chan os.FileInfo, scanCompleteChannel *chan bool, aesKey string) {
+func Decrypt(fileChannel *chan PathedFile, scanCompleteChannel *chan bool, aesKey string) {
 	if len(*fileChannel) == 0 {
 		fmt.Println("no file found to decrypt.exit.")
 		return
@@ -30,12 +30,21 @@ end:
 	fmt.Println("decrypt complete,total: ", fileCount)
 }
 
-func doDecrypt(file os.FileInfo, aesKey string) {
+func doDecrypt(file PathedFile, aesKey string) {
 	fileCount++
-	fmt.Println(file.Name(), " decrypted")
+	encryptedBytes, err := ioutil.ReadFile(file.path)
+	if err != nil {
+		panic(err)
+	}
+	plainBytes := decryptAesCBC(encryptedBytes, []byte(aesKey))
+	err = ioutil.WriteFile(file.path, plainBytes, file.info.Mode())
+	if err != nil {
+		panic("decrypt file[ " + file.path + " ] error")
+	}
+	fmt.Println(file.info.Name(), " decrypted")
 }
 
-func decrypt(src, key []byte) []byte {
+func decryptAesCBC(src, key []byte) []byte {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println(nil)

