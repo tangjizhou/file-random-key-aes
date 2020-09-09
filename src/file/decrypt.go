@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 )
 
-var fileCount = 0
+var decryptCount = 0
 
 func Decrypt(fileChannel *chan PathedFile, scanCompleteChannel *chan bool, aesKey string) {
 	if len(*fileChannel) == 0 {
@@ -27,11 +27,10 @@ func Decrypt(fileChannel *chan PathedFile, scanCompleteChannel *chan bool, aesKe
 		}
 	}
 end:
-	fmt.Println("decrypt complete,total: ", fileCount)
+	fmt.Println("decrypt complete,total: ", decryptCount)
 }
 
 func doDecrypt(file PathedFile, aesKey string) {
-	fileCount++
 	encryptedBytes, err := ioutil.ReadFile(file.path)
 	if err != nil {
 		panic(err)
@@ -42,6 +41,7 @@ func doDecrypt(file PathedFile, aesKey string) {
 		panic("decrypt file[ " + file.path + " ] error")
 	}
 	fmt.Println(file.info.Name(), " decrypted")
+	decryptCount++
 }
 
 func decryptAesCBC(src, key []byte) []byte {

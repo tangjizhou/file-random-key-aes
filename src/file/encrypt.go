@@ -10,6 +10,7 @@ import (
 )
 
 var encryptKey = generateKey()
+var encryptCount = 0
 
 func Encrypt(fileChannel *chan PathedFile, scanCompleteChannel *chan bool) {
 	if len(*fileChannel) == 0 {
@@ -29,11 +30,13 @@ func Encrypt(fileChannel *chan PathedFile, scanCompleteChannel *chan bool) {
 		}
 	}
 end:
-	fmt.Println("encryptAesCBC complete,total: ", fileCount)
+	fmt.Println("encryptAesCBC complete,total: ", decryptCount)
+	if encryptCount != 0 {
+		fmt.Println("key:", encryptKey)
+	}
 }
 
 func doEncrypt(file PathedFile) {
-	fileCount++
 	plainBytes, err := ioutil.ReadFile(file.path)
 	if err != nil {
 		panic(err)
@@ -43,6 +46,7 @@ func doEncrypt(file PathedFile) {
 	if err != nil {
 		panic("encryptAesCBC file[ " + file.path + " ] error")
 	}
+	encryptCount++
 	fmt.Println(file.info.Name(), " encrypted")
 }
 
