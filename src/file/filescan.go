@@ -18,8 +18,25 @@ type PathedFile struct {
 }
 
 func Scan(path string) (*chan PathedFile, *chan bool) {
-	files, _ := ioutil.ReadDir(path)
 
+	parentPath := filepath.Dir(path)
+	dirs, _ := ioutil.ReadDir(parentPath)
+	paths := make([]string, 1)
+	for _, dir := range dirs {
+		fullPath := filepath.Join(parentPath, dir.Name())
+		if matched, _ := filepath.Match(path, fullPath); matched {
+			paths = append(paths)
+		}
+	}
+
+	for _, path := range paths {
+		go walkPath(path)
+	}
+	return &fileChannel, &scanCompleteChannel
+}
+
+func walkPath(path string) {
+	files, _ := ioutil.ReadDir(path)
 	// 统计匹配的第二层文件夹
 	matchedDirs := make([]os.FileInfo, 0)
 	for _, file := range files {
@@ -38,7 +55,6 @@ func Scan(path string) (*chan PathedFile, *chan bool) {
 			go doScan(filepath.Join(path, file.Name()), &pendingCount)
 		}
 	}
-	return &fileChannel, &scanCompleteChannel
 }
 
 func isDirMatched(file os.FileInfo) bool {
